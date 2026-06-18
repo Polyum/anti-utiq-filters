@@ -15,6 +15,7 @@ The following rules are compatible with both **uBlock Origin** and **AdGuard**. 
 ```text
 ! =====================================================================
 ! Utiq Tracker Mitigation — uBlock Origin & AdGuard compatible
+! Source: https://github.com/Polyum/anti-utiq-filters
 ! =====================================================================
 
 ! 1. Central Infrastructure
