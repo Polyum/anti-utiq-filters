@@ -1,0 +1,16 @@
+! =====================================================================
+! Utiq Tracker Mitigation — AdBlock & AdBlock Plus compatible
+! Source: https://github.com/Polyum/anti-utiq-filters
+! =====================================================================
+
+! 1. Central Infrastructure
+||utiq.com^
+||utiq-aws.net^
+
+! 2. Script & API Interception
+/utiqLoader.js$script,important
+/op/idconnect/mno-precheck$xmlhttprequest,important
+
+! 3. Partner-Hosted Subdomain Blocking
+! Adapted for ABP: matches 'utiq.' at any domain or subdomain boundary
+||utiq.
