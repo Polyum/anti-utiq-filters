@@ -11,8 +11,13 @@ The objective is to block tracking requests whether they originate from Utiq's c
 ## 📖 Table of Contents
 
 - [Repository Files](#-repository-files)
-- [Filter Rules](#-filter-rules)
+- [Installation](#-installation)
+  - [For uBlock Origin & AdGuard](#1️⃣-for-ublock-origin--adguard-filters-ubo-adguardtxt)
+  - [For AdBlock & AdBlock Plus](#2️⃣-for-adblock--adblock-plus-filters-abptxt)
 - [Technical Analysis](#-technical-analysis)
+  - [Central Infrastructure](#1-central-infrastructure)
+  - [Script & API Interception](#2-script--api-interception)
+  - [Partner-Hosted Subdomain Blocking](#3-partner-hosted-subdomain-blocking)
 - [Known Utiq Infrastructure](#️-known-utiq-infrastructure)
 - [Compatibility](#-compatibility)
 - [Verification](#️-verification)
@@ -32,15 +37,37 @@ The objective is to block tracking requests whether they originate from Utiq's c
 
 ---
 
-## 📋 Filter Rules
+## 📥 Installation
 
-Choose the appropriate filter list based on your browser extension. Copy and paste the rules into your extension's **"My filters"** / **"Custom Filters"** editor, or subscribe directly to the raw file URL.
+Choose the appropriate filter list based on your browser extension.
 
 ### 1️⃣ For uBlock Origin & AdGuard (`filters-ubo-adguard.txt`)
 
 Optimized for modern filter engines supporting advanced wildcard matching and short modifiers.
 
+#### ✅ Recommended — Subscribe to the raw file (auto-updates every 2 days)
+
+The filter files include an `Expires: 2 days` metadata directive. Your extension will automatically fetch the latest version every 2 days, without any manual intervention.
+
+**uBlock Origin:** Settings → Filter lists → Import → Paste the URL below → Apply changes
+
+**AdGuard:** Settings → Filters → Custom → Add custom filter → Paste the URL below
+
+```
+https://raw.githubusercontent.com/Polyum/anti-utiq-filters/main/filters-ubo-adguard.txt
+```
+
+#### 🔁 Alternative — Manual copy/paste (no auto-update)
+
+Copy and paste the rules below into your extension's **"My filters"** / **"Custom Filters"** editor. Note that this method does not auto-update — you will need to check for new versions manually.
+
 ```text
+! Title: anti-utiq-filters (uBlock Origin & AdGuard)
+! Description: Custom filtering rules to block the Utiq tracking network.
+! Homepage: https://github.com/Polyum/anti-utiq-filters
+! Expires: 2 days
+! Version: 1.5
+
 ! =====================================================================
 ! Utiq Tracker Mitigation — uBlock Origin & AdGuard compatible
 ! Source: https://github.com/Polyum/anti-utiq-filters
@@ -61,11 +88,29 @@ Optimized for modern filter engines supporting advanced wildcard matching and sh
 ||utiq.*^
 ```
 
+---
+
 ### 2️⃣ For AdBlock & AdBlock Plus (`filters-abp.txt`)
 
 Backward-compatible version adjusted to comply with stricter legacy parsing rules. The `$important` modifier is intentionally omitted — it is a uBlock Origin extension not supported by ABP engines and would cause these rules to be silently ignored or rejected.
 
+#### ✅ Recommended — Subscribe to the raw file (auto-updates every 2 days)
+
+**AdBlock / AdBlock Plus:** Options → Filter lists → Add a filter list → Paste the URL below
+
+```
+https://raw.githubusercontent.com/Polyum/anti-utiq-filters/main/filters-abp.txt
+```
+
+#### 🔁 Alternative — Manual copy/paste (no auto-update)
+
 ```text
+! Title: anti-utiq-filters (AdBlock & AdBlock Plus)
+! Description: Custom filtering rules to block the Utiq tracking network.
+! Homepage: https://github.com/Polyum/anti-utiq-filters
+! Expires: 2 days
+! Version: 1.5
+
 ! =====================================================================
 ! Utiq Tracker Mitigation — AdBlock & AdBlock Plus compatible
 ! Source: https://github.com/Polyum/anti-utiq-filters
