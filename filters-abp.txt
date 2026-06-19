@@ -6,6 +6,7 @@
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
+||utiqcontent.com^
 
 ! 2. Script & API Interception
 /utiqLoader.js$script
