@@ -4,7 +4,7 @@
 
 This repository provides optimized filter rules designed to neutralize **Utiq** — the network-level tracking service (commonly known as the "Telecom Cookie") operated by major European carriers, including Orange, SFR, Bouygues, Vodafone, and others.
 
-The objective is to block tracking requests whether they originate from Utiq's central infrastructure or via partner-hosted subdomains (`utiq.orange.fr`, `utiq.france.tv`, `utiq.sfr.fr`, etc.).
+The objective is to block tracking requests whether they originate from Utiq's central infrastructure or via partner-hosted subdomains (`utiq.orange.fr`, `utiq.france.tv`, `utiq.allocine.fr`, etc.).
 
 ---
 
@@ -41,7 +41,7 @@ Optimized for modern filter engines supporting advanced wildcard matching and sh
 /op/idconnect/mno-precheck$xhr,important
 
 ! 3. Partner-Hosted Subdomain Blocking
-! Blocks utiq.orange.fr, utiq.france.tv, utiq.sfr.fr, etc.
+! Blocks utiq.orange.fr, utiq.france.tv, utiq.allocine.fr, etc.
 ! The * wildcard matches any parent domain, regardless of TLD.
 ||utiq.*^
 ```
@@ -107,7 +107,7 @@ To extend their reach, Utiq's carrier and media partners provision a `utiq.` sub
 |---|---|
 | `utiq.orange.fr` | `orange.fr` |
 | `utiq.france.tv` | `france.tv` |
-| `utiq.sfr.fr` | `sfr.fr` |
+| `utiq.allocine.fr` | `allocine.fr` |
 | `utiq.lefigaro.fr` | `lefigaro.fr` |
 | … | … |
 
@@ -122,6 +122,38 @@ The `||` anchor matches at the beginning of a hostname or after a `.` separator.
 
 **`||utiq.`** *(AdBlock & AdBlock Plus)*
 ABP does not reliably handle the `.*^` wildcard combination in this position. The trailing `^` and wildcard are dropped: `||utiq.` matches any request where `utiq.` appears at a domain boundary, covering all partner-hosted subdomains with equivalent effectiveness.
+
+---
+
+## 🗺️ Known Utiq Infrastructure
+
+This section documents Utiq's known core domains and endpoints, as a reference for contributors monitoring new infrastructure deployments.
+
+> For a comprehensive and maintained list of partner-hosted subdomains, refer to the community blocklist: [utiq-tracker.online](https://utiq-tracker.online/)
+
+### Root Domains
+| Domain | Role |
+|---|---|
+| `utiq.com` | Main infrastructure — consent hub, APIs, CDN |
+| `utiq-aws.net` | AWS production backend |
+| `utiqcontent.com` | Static assets — SDK configuration files and SVGs |
+
+### Known Subdomains
+| Subdomain | Role |
+|---|---|
+| `consenthub.utiq.com` | User consent management portal |
+| `frontend.prod.utiq-aws.net` | Production API gateway — CNAME target for all partner-hosted subdomains |
+
+### Known API Endpoints
+| Path | Role |
+|---|---|
+| `/op/idconnect/mno-precheck` | Mobile Network Operator handshake — subscriber identity validation |
+
+### Known Scripts
+| Filename | Role |
+|---|---|
+| `utiqLoader.js` | Main initialization script injected on partner sites |
+| `utiqConsentManager.js` | Consent popup script, loaded by `utiqLoader.js` — blocked implicitly if the loader is blocked |
 
 ---
 
@@ -204,11 +236,11 @@ Please include the domain or path observed, the partner site where you detected 
 
 | Version | Date | Notes |
 |---|---|---|
-| 1.5 | 19-06-2026 | Added `\|\|utiqcontent.com^` to both filter files (Utiq static assets domain) |
-| 1.4 | 18-06-2026 | Removed `$important` from `filters-abp.txt` (not supported by AdBlock/ABP engines) |
-| 1.3 | 18-06-2026 | Added `filters-abp.txt` (AdBlock & AdBlock Plus support) |
-| 1.2 | 18-06-2026 | Unified filter set (uBO + AdGuard); corrected `\|\|utiq.*^` subdomain-prefix matching |
-| 1.1 | 18-06-2026 | Split uBO / AdGuard variants; added compatibility table; corrected terminology |
+| 1.5 | 2026-06-19 | Added `\|\|utiqcontent.com^` to both filter files (Utiq static assets domain) |
+| 1.4 | 2026-06-19 | Removed `$important` from `filters-abp.txt` (not supported by AdBlock/ABP engines) |
+| 1.3 | 2026-06-18 | Added `filters-abp.txt` (AdBlock & AdBlock Plus support) |
+| 1.2 | 2026-06-18 | Unified filter set (uBO + AdGuard); corrected `\|\|utiq.*^` subdomain-prefix matching |
+| 1.1 | 2026-06-18 | Split uBO / AdGuard variants; added compatibility table; corrected terminology |
 | 1.0 | — | Initial release |
 
 ---
