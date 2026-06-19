@@ -6,12 +6,13 @@
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
+||utiqcontent.com^
 
 ! 2. Script & API Interception
 /utiqLoader.js$script,important
 /op/idconnect/mno-precheck$xhr,important
 
 ! 3. Partner-Hosted Subdomain Blocking
-! Blocks utiq.orange.fr, utiq.france.tv, utiq.sfr.fr, etc.
+! Blocks utiq.orange.fr, utiq.france.tv, utiq.allocine.fr, etc.
 ! The * wildcard matches any parent domain, regardless of TLD.
 ||utiq.*^
