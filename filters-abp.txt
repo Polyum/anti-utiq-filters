@@ -1,3 +1,9 @@
+! Title: anti-utiq-filters (AdBlock & AdBlock Plus)
+! Description: Custom filtering rules to block the Utiq tracking network.
+! Homepage: https://github.com/Polyum/anti-utiq-filters
+! Expires: 2 days
+! Version: 1.5
+
 ! =====================================================================
 ! Utiq Tracker Mitigation — AdBlock & AdBlock Plus compatible
 ! Source: https://github.com/Polyum/anti-utiq-filters
