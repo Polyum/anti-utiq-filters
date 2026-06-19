@@ -4,7 +4,7 @@
 
 This repository provides optimized filter rules designed to neutralize **Utiq** — the network-level tracking service (commonly known as the "Telecom Cookie") operated by major European carriers, including Orange, SFR, Bouygues, Vodafone, and others.
 
-The objective is to block tracking requests whether they originate from Utiq's central infrastructure or via partner-hosted subdomains (`utiq.orange.fr`, `utiq.france.tv`, `utiq.sfr.fr`, etc.).
+The objective is to block tracking requests whether they originate from Utiq's central infrastructure or via partner-hosted subdomains (`utiq.orange.fr`, `utiq.france.tv`, `utiq.allocine.fr`, etc.).
 
 ---
 
@@ -40,7 +40,7 @@ Optimized for modern filter engines supporting advanced wildcard matching and sh
 /op/idconnect/mno-precheck$xhr,important
 
 ! 3. Partner-Hosted Subdomain Blocking
-! Blocks utiq.orange.fr, utiq.france.tv, utiq.sfr.fr, etc.
+! Blocks utiq.orange.fr, utiq.france.tv, utiq.allocine.fr, etc.
 ! The * wildcard matches any parent domain, regardless of TLD.
 ||utiq.*^
 ```
