@@ -163,6 +163,8 @@ Subscribe to a community-maintained blocklist to receive automatic domain update
 
 > ⚠️ Always verify the trustworthiness of a third-party blocklist before subscribing.
 
+> 💡 **Pi-hole / AdGuard Home users:** this project's filters rely on HTTP-level rules (script paths, API endpoints, request types) that DNS-based blockers cannot process. The community blocklist above may offer better-suited DNS entries for your setup.
+
 ---
 
 ## 📅 Changelog
