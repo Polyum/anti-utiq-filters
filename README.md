@@ -8,6 +8,21 @@ The objective is to block tracking requests whether they originate from Utiq's c
 
 ---
 
+## 📖 Table of Contents
+
+- [Repository Files](#-repository-files)
+- [Filter Rules](#-filter-rules)
+- [Technical Analysis](#-technical-analysis)
+- [Known Utiq Infrastructure](#️-known-utiq-infrastructure)
+- [Compatibility](#-compatibility)
+- [Verification](#️-verification)
+- [Defense in Depth](#️-defense-in-depth)
+- [Contributing](#-contributing)
+- [Changelog](#-changelog)
+- [License](#-license)
+
+---
+
 ## 📁 Repository Files
 
 | File | Target | Raw link |
