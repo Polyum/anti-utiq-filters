@@ -8,8 +8,8 @@
 ||utiq-aws.net^
 
 ! 2. Script & API Interception
-/utiqLoader.js$script,important
-/op/idconnect/mno-precheck$xmlhttprequest,important
+/utiqLoader.js$script
+/op/idconnect/mno-precheck$xmlhttprequest
 
 ! 3. Partner-Hosted Subdomain Blocking
 ! Adapted for ABP: matches 'utiq.' at any domain or subdomain boundary
