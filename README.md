@@ -177,6 +177,19 @@ Subscribe to a community-maintained blocklist to receive automatic domain update
 
 ---
 
+## 🤝 Contributing
+
+This project only tracks changes to Utiq's infrastructure. If you detect any of the following, feel free to open an issue or a pull request:
+
+- A new root domain (alternative to `utiq.com` or `utiq-aws.net`)
+- A new API path (alternative to `/op/idconnect/mno-precheck`)
+- A new script name (alternative to `utiqLoader.js`)
+- A partner using a subdomain prefix other than `utiq.`
+
+Please include the domain or path observed, the partner site where you detected it, and ideally a screenshot of the Network Logger showing the blocked (or unblocked) request.
+
+---
+
 ## 📄 License
 
 This project is open-source and licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.
