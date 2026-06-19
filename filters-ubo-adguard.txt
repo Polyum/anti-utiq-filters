@@ -1,3 +1,9 @@
+! Title: anti-utiq-filters (uBlock Origin & AdGuard)
+! Description: Custom filtering rules to block the Utiq tracking network.
+! Homepage: https://github.com/Polyum/anti-utiq-filters
+! Expires: 2 days
+! Version: 1.5
+
 ! =====================================================================
 ! Utiq Tracker Mitigation — uBlock Origin & AdGuard compatible
 ! Source: https://github.com/Polyum/anti-utiq-filters
