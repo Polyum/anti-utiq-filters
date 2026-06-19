@@ -4,7 +4,7 @@
 
 This repository provides optimized filter rules designed to neutralize **Utiq** — the network-level tracking service (commonly known as the "Telecom Cookie") operated by major European carriers, including Orange, SFR, Bouygues, Vodafone, and others.
 
-The objective is to block tracking requests whether they originate from Utiq's central infrastructure or via partner-hosted subdomains (`utiq.orange.fr`, `utiq.france.tv`, `utiq.allocine.fr`, etc.).
+The objective is to block tracking requests whether they originate from Utiq's central infrastructure or via partner-hosted subdomains (`utiq.orange.fr`, `utiq.france.tv`, `utiq.sfr.fr`, etc.).
 
 ---
 
@@ -34,13 +34,14 @@ Optimized for modern filter engines supporting advanced wildcard matching and sh
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
+||utiqcontent.com^
 
 ! 2. Script & API Interception
 /utiqLoader.js$script,important
 /op/idconnect/mno-precheck$xhr,important
 
 ! 3. Partner-Hosted Subdomain Blocking
-! Blocks utiq.orange.fr, utiq.france.tv, utiq.allocine.fr, etc.
+! Blocks utiq.orange.fr, utiq.france.tv, utiq.sfr.fr, etc.
 ! The * wildcard matches any parent domain, regardless of TLD.
 ||utiq.*^
 ```
@@ -58,6 +59,7 @@ Backward-compatible version adjusted to comply with stricter legacy parsing rule
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
+||utiqcontent.com^
 
 ! 2. Script & API Interception
 /utiqLoader.js$script
@@ -79,6 +81,9 @@ The `||` anchor targets the root domain **and all its subdomains recursively**. 
 
 **`||utiq-aws.net^`**
 Utiq's production backend runs on AWS under this dedicated domain. Blocking the root severs access to the current gateway (`frontend.prod`) and pre-emptively covers any future subdomains the network may deploy. Note that `utiq-aws.net` begins with `utiq-` (hyphen, not dot) and is therefore **not** caught by the partner-subdomain rules — this explicit entry is necessary. Applies to all four engines.
+
+**`||utiqcontent.com^`**
+A separate root domain used by the Utiq SDK to load static assets (configuration files and SVGs). Independent from `utiq.com` and `utiq-aws.net`, it would not be caught by any other rule. Applies to all four engines.
 
 ---
 
@@ -102,7 +107,7 @@ To extend their reach, Utiq's carrier and media partners provision a `utiq.` sub
 |---|---|
 | `utiq.orange.fr` | `orange.fr` |
 | `utiq.france.tv` | `france.tv` |
-| `utiq.allocine.fr` | `allocine.fr` |
+| `utiq.sfr.fr` | `sfr.fr` |
 | `utiq.lefigaro.fr` | `lefigaro.fr` |
 | … | … |
 
@@ -199,10 +204,11 @@ Please include the domain or path observed, the partner site where you detected 
 
 | Version | Date | Notes |
 |---|---|---|
-| 1.4 | 2025-06-18 | Removed `$important` from `filters-abp.txt` (not supported by AdBlock/ABP engines) |
-| 1.3 | 2025-06-18 | Added `filters-abp.txt` (AdBlock & AdBlock Plus support) |
-| 1.2 | 2025-06-18 | Unified filter set (uBO + AdGuard); corrected `\|\|utiq.*^` subdomain-prefix matching |
-| 1.1 | 2025-06-18 | Split uBO / AdGuard variants; added compatibility table; corrected terminology |
+| 1.5 | 19-06-2026 | Added `\|\|utiqcontent.com^` to both filter files (Utiq static assets domain) |
+| 1.4 | 18-06-2026 | Removed `$important` from `filters-abp.txt` (not supported by AdBlock/ABP engines) |
+| 1.3 | 18-06-2026 | Added `filters-abp.txt` (AdBlock & AdBlock Plus support) |
+| 1.2 | 18-06-2026 | Unified filter set (uBO + AdGuard); corrected `\|\|utiq.*^` subdomain-prefix matching |
+| 1.1 | 18-06-2026 | Split uBO / AdGuard variants; added compatibility table; corrected terminology |
 | 1.0 | — | Initial release |
 
 ---
