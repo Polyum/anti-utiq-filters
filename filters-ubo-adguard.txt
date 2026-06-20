@@ -4,11 +4,6 @@
 ! Expires: 2 days
 ! Version: 1.5
 
-! =====================================================================
-! Utiq Tracker Mitigation — uBlock Origin & AdGuard compatible
-! Source: https://github.com/Polyum/anti-utiq-filters
-! =====================================================================
-
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
