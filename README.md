@@ -68,11 +68,6 @@ Copy and paste the rules below into your extension's **"My filters"** / **"Custo
 ! Expires: 2 days
 ! Version: 1.5
 
-! =====================================================================
-! Utiq Tracker Mitigation — uBlock Origin & AdGuard compatible
-! Source: https://github.com/Polyum/anti-utiq-filters
-! =====================================================================
-
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
@@ -110,11 +105,6 @@ https://raw.githubusercontent.com/Polyum/anti-utiq-filters/main/filters-abp.txt
 ! Homepage: https://github.com/Polyum/anti-utiq-filters
 ! Expires: 2 days
 ! Version: 1.5
-
-! =====================================================================
-! Utiq Tracker Mitigation — AdBlock & AdBlock Plus compatible
-! Source: https://github.com/Polyum/anti-utiq-filters
-! =====================================================================
 
 ! 1. Central Infrastructure
 ||utiq.com^
