@@ -6,6 +6,8 @@ This repository provides optimized filter rules designed to neutralize **Utiq** 
 
 The objective is to block tracking requests whether they originate from Utiq's central infrastructure or via partner-hosted subdomains (`utiq.orange.fr`, `utiq.france.tv`, `utiq.allocine.fr`, etc.).
 
+> 🇫🇷 *Une [version française de ce README](README.fr.md) est aussi disponible.*
+
 ---
 
 ## 📖 Table of Contents
@@ -23,6 +25,7 @@ The objective is to block tracking requests whether they originate from Utiq's c
 - [Compatibility](#-compatibility)
 - [Verification](#️-verification)
 - [Defense in Depth](#️-defense-in-depth)
+- [Known Limitations & Complementary Measures](#️-known-limitations--complementary-measures)
 - [Contributing](#-contributing)
 - [Changelog](#-changelog)
 - [License](#-license)
@@ -202,7 +205,9 @@ ABP does not reliably handle the `.*^` wildcard combination in this position. Th
 ### 4. Cross-Domain Iframe Blocking
 
 **`##iframe[name="__utiqLocator"]`**
-When publishers run programmatic advertising (Prebid.js v10.11+) inside cross-domain iframes, the Utiq SDK injects a void iframe named `__utiqLocator` into the parent DOM to signal the presence of Utiq IDs and cascade `adtechpass` (`atid`) and `martechpass` (`mtid`) tokens to child frames. This cosmetic rule blocks the locator iframe across all four engines.
+When publishers run programmatic advertising (Prebid.js v10.11+) inside cross-domain iframes, the Utiq SDK injects a void iframe named `__utiqLocator` into the parent DOM to signal the presence of Utiq IDs and cascade `adtechpass` (`atid`) and `martechpass` (`mtid`) tokens to child frames.
+
+This is a **cosmetic rule: it hides the element, it does not prevent it from being created or from doing its job.** The iframe is injected by JavaScript, so the real protection comes from stopping the SDK upstream (`/utiqLoader.js`, `||utiq.com^`, etc. — see sections 1 and 2): if the loader never runs, the locator is never injected. Treat this rule as a cosmetic safety net, not as protection in itself. Supported by all four engines.
 
 ---
 
@@ -269,8 +274,11 @@ This section documents Utiq's known core domains and endpoints, as a reference f
 | `$important` modifier | ✅ | ✅ | ❌ | ❌ |
 | `\|\|utiq.*^` (wildcard) | ✅ | ✅ | ❌ | ❌ |
 | `\|\|utiq.` (boundary match) | ✅ | ✅ | ✅ | ✅ |
-| `##iframe[name="..."]` (cosmetic) | ✅ | ✅ | ✅ | ✅ |
+| `##iframe[name="..."]` (cosmetic — hides only) | ✅ | ✅ | ✅ | ✅ |
+| CNAME uncloaking (browser feature, **not** a filter rule) | ✅ Firefox only | — | — | — |
 
+> `—` = no equivalent verified for this project.
+>
 > These rules apply to **browser-based** filtering only (extension required). They have no effect on native mobile apps or system-level traffic.
 
 ---
@@ -297,7 +305,7 @@ No single layer provides complete protection. Each layer's blind spots are cover
 | DNS blocklist | All devices on the network | Blind to CNAME cloaking; cannot block by path or request type |
 
 ### Layer 1 — Browser Filters (this project)
-These rules intercept Utiq's script, API handshake, and partner subdomains at the HTTP level. Path-based rules (`/utiqLoader.js`, `/utiqConsentManager.js`, `/op/idconnect/`, `/op/privacy/`) remain effective even against CNAME cloaking, unlike DNS-level blocking.
+These rules intercept Utiq's script, API handshake, and partner subdomains at the HTTP level. Path-based rules (`/utiqLoader.js`, `/utiqConsentManager.js`, `/op/idconnect/`, `/op/privacy/`) remain effective even against CNAME cloaking, unlike DNS-level blocking — unless a partner also renames those paths. See [Known Limitations](#️-known-limitations--complementary-measures).
 
 ### Layer 2 — Legal Opt-Out (Carrier Level)
 Formally revoke your consent at the carrier infrastructure level via Utiq's official privacy portal:
@@ -319,6 +327,28 @@ Subscribe to a community-maintained blocklist to receive automatic domain update
 
 ---
 
+## ⚠️ Known Limitations & Complementary Measures
+
+These filters stop Utiq as long as its traffic is identifiable either by hostname (`utiq.*`, `utiq.com`, `utiq-aws.net`, `utiqcontent.com`, `mno.link`) or by script/endpoint path. Two situations sit outside what a static filter list can fully solve.
+
+### 1. CNAME cloaking behind an arbitrary first-party hostname
+
+A partner can expose Utiq under a hostname of its own choosing (for example `stats.example.com`) that is DNS-CNAME'd to `frontend.prod.utiq-aws.net`. The filter engine only sees `stats.example.com`, so **domain rules cannot match** in this scenario, and no additional domain rule can fix it, because the hostname is not Utiq's.
+
+What still protects you:
+
+- **Path rules** (`/utiqLoader.js`, `/utiqConsentManager.js`, `/op/idconnect/`, `/op/privacy/`) do not depend on the hostname and keep working, unless a partner also renames those paths.
+- **uBlock Origin on Firefox** can resolve the CNAME itself and re-apply the filters to the real hostname, where `||utiq-aws.net^` matches. In uBO this is the **"Uncloak canonical names"** option (Settings → Privacy), which is **enabled by default**. If you disabled it, re-enable it. It is Firefox-only: it relies on a DNS API that Firefox exposes to extensions and Chromium-based browsers do not.
+
+> The remaining gap is therefore narrow but real: a **non-Firefox browser** facing a partner that uses an arbitrary first-party hostname **and** renamed paths. No filter list can close it; the VPN layer above does.
+
+### 2. Data already stored, and complementary fingerprinting
+
+- **Existing local data is not erased by filters.** Filters stop the SDK and its API calls, but values stored before the filters were installed (the `connectId` cookie, `utiqPass` and other keys listed in [Known First-Party Cookies & Local Storage Keys](#known-first-party-cookies--local-storage-keys)) stay in your browser until you clear them. Clear the site data of Utiq-using sites once after installing the filters.
+- **Fingerprinting.** Independent reports indicate that sites using Utiq often combine it with canvas and font fingerprinting. That runs client-side inside otherwise-legitimate scripts, so no network filter, domain- or path-based, can intercept it. Use a dedicated tool in addition to this project: a fingerprint-resistant browser (Mullvad Browser, Tor Browser) or an extension such as CanvasBlocker.
+
+---
+
 ## 🤝 Contributing
 
 This project only tracks changes to Utiq's infrastructure. If you detect any of the following, feel free to open an issue or a pull request:
@@ -329,6 +359,8 @@ This project only tracks changes to Utiq's infrastructure. If you detect any of 
 - A partner using a subdomain prefix other than `utiq.`
 
 Please include the domain or path observed, the partner site where you detected it, and ideally a screenshot of the Network Logger showing the blocked (or unblocked) request.
+
+> Requests to "fix" CNAME cloaking or fingerprinting by adding filter rules cannot be actioned here: these are browser-level or tooling-level limits, not missing rules. See [Known Limitations](#️-known-limitations--complementary-measures).
 
 ---
 
