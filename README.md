@@ -18,6 +18,7 @@ The objective is to block tracking requests whether they originate from Utiq's c
   - [Central Infrastructure](#1-central-infrastructure)
   - [Script & API Interception](#2-script--api-interception)
   - [Partner-Hosted Subdomain Blocking](#3-partner-hosted-subdomain-blocking)
+  - [Cross-Domain Iframe Blocking](#4-cross-domain-iframe-blocking)
 - [Known Utiq Infrastructure](#️-known-utiq-infrastructure)
 - [Compatibility](#-compatibility)
 - [Verification](#️-verification)
@@ -53,35 +54,41 @@ The filter files include an `Expires: 2 days` metadata directive. Your extension
 
 **AdGuard:** Settings → Filters → Custom → Add custom filter → Paste the URL below
 
-```
+~~~
 https://raw.githubusercontent.com/Polyum/anti-utiq-filters/main/filters-ubo-adguard.txt
-```
+~~~
 
 #### 🔁 Alternative — Manual copy/paste (no auto-update)
 
 Copy and paste the rules below into your extension's **"My filters"** / **"Custom Filters"** editor. Note that this method does not auto-update — you will need to check for new versions manually.
 
-```text
+~~~text
 ! Title: anti-utiq-filters (uBlock Origin & AdGuard)
 ! Description: Custom filtering rules to block the Utiq tracking network.
 ! Homepage: https://github.com/Polyum/anti-utiq-filters
 ! Expires: 2 days
-! Version: 1.5
+! Version: 1.6
 
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
 ||utiqcontent.com^
+||mno.link^
 
 ! 2. Script & API Interception
 /utiqLoader.js$script,important
-/op/idconnect/mno-precheck$xhr,important
+/utiqConsentManager.js$script,important
+/op/idconnect/$xhr,subdocument,important
+/op/privacy/$xhr,important
 
 ! 3. Partner-Hosted Subdomain Blocking
 ! Blocks utiq.orange.fr, utiq.france.tv, utiq.allocine.fr, etc.
 ! The * wildcard matches any parent domain, regardless of TLD.
 ||utiq.*^
-```
+
+! 4. Cross-Domain Iframe Blocking
+##iframe[name="__utiqLocator"]
+~~~
 
 ---
 
@@ -93,32 +100,38 @@ Backward-compatible version adjusted to comply with stricter legacy parsing rule
 
 **AdBlock / AdBlock Plus:** Options → Filter lists → Add a filter list → Paste the URL below
 
-```
+~~~
 https://raw.githubusercontent.com/Polyum/anti-utiq-filters/main/filters-abp.txt
-```
+~~~
 
 #### 🔁 Alternative — Manual copy/paste (no auto-update)
 
-```text
+~~~text
 ! Title: anti-utiq-filters (AdBlock & AdBlock Plus)
 ! Description: Custom filtering rules to block the Utiq tracking network.
 ! Homepage: https://github.com/Polyum/anti-utiq-filters
 ! Expires: 2 days
-! Version: 1.5
+! Version: 1.6
 
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
 ||utiqcontent.com^
+||mno.link^
 
 ! 2. Script & API Interception
 /utiqLoader.js$script
-/op/idconnect/mno-precheck$xmlhttprequest
+/utiqConsentManager.js$script
+/op/idconnect/$xmlhttprequest,subdocument
+/op/privacy/$xmlhttprequest
 
 ! 3. Partner-Hosted Subdomain Blocking
 ! Adapted for ABP: matches 'utiq.' at any domain or subdomain boundary
 ||utiq.
-```
+
+! 4. Cross-Domain Iframe Blocking
+##iframe[name="__utiqLocator"]
+~~~
 
 ---
 
@@ -127,13 +140,16 @@ https://raw.githubusercontent.com/Polyum/anti-utiq-filters/main/filters-abp.txt
 ### 1. Central Infrastructure
 
 **`||utiq.com^`**
-The `||` anchor targets the root domain **and all its subdomains recursively**. This single rule drops all traffic to nodes such as `consenthub.utiq.com`, `api.utiq.com`, or `cdn.utiq.com`. Applies to all four engines.
+The `||` anchor targets the root domain **and all its subdomains recursively**. This single rule drops all traffic to nodes such as `consenthub.utiq.com`, `service.utiq.com`, `api.utiq.com`, or `cdn.utiq.com`. Applies to all four engines.
 
 **`||utiq-aws.net^`**
 Utiq's production backend runs on AWS under this dedicated domain. Blocking the root severs access to the current gateway (`frontend.prod`) and pre-emptively covers any future subdomains the network may deploy. Note that `utiq-aws.net` begins with `utiq-` (hyphen, not dot) and is therefore **not** caught by the partner-subdomain rules — this explicit entry is necessary. Applies to all four engines.
 
 **`||utiqcontent.com^`**
 A separate root domain used by the Utiq SDK to load static assets (configuration files and SVGs). Independent from `utiq.com` and `utiq-aws.net`, it would not be caught by any other rule. Applies to all four engines.
+
+**`||mno.link^`**
+During the Mobile Network Operator (MNO) handshake, Utiq routes subscriber identification requests through carrier-specific subdomains under `mno.link` (`orangefr.mno.link`, `o2de.mno.link`, `vfde-fixed.mno.link`, etc.), which point via CNAME to `frontend.prod.utiq-aws.net`. Because these domains do not start with `utiq.`, they are not matched by partner-subdomain rules, and browsers without native CNAME uncloaking (such as Chromium-based browsers) cannot see the underlying `utiq-aws.net` target. Blocking `mno.link` directly closes this blind spot. Applies to all four engines.
 
 ---
 
@@ -143,9 +159,17 @@ A separate root domain used by the Utiq SDK to load static assets (configuration
 **`/utiqLoader.js$script`** *(AdBlock & AdBlock Plus)*
 Targets Utiq's initialization script by path, regardless of the host domain attempting to inject it. The `$important` modifier is available in uBO and AdGuard only: it assigns strict priority, preventing site-specific allowlist rules from bypassing the block. It is intentionally absent from the ABP variant, where it is not supported and would silently invalidate the rule.
 
-**`/op/idconnect/mno-precheck$xhr,important`** *(uBlock Origin & AdGuard)*
-**`/op/idconnect/mno-precheck$xmlhttprequest`** *(AdBlock & AdBlock Plus)*
-The `mno-precheck` (*Mobile Network Operator*) endpoint is the API call that queries the cellular network to validate your subscriber identity in the background. Both rules target XHR/Fetch requests to this exact path. `$xhr` is the modern short form supported by uBO and AdGuard; `$xmlhttprequest` is the legacy equivalent required by AdBlock and AdBlock Plus. The `$important` modifier is again omitted from the ABP variant for the same reason.
+**`/utiqConsentManager.js$script,important`** *(uBlock Origin & AdGuard)*
+**`/utiqConsentManager.js$script`** *(AdBlock & AdBlock Plus)*
+Targets Utiq's consent management script by path. While normally loaded by `utiqLoader.js`, the Utiq SDK allows publishers to load the consent manager from a separate custom origin via the `consentManagerOrigin` configuration option. Blocking it explicitly ensures coverage in all setups.
+
+**`/op/idconnect/$xhr,subdocument,important`** *(uBlock Origin & AdGuard)*
+**`/op/idconnect/$xmlhttprequest,subdocument`** *(AdBlock & AdBlock Plus)*
+Intercepts the entire `/op/idconnect/` endpoint family (`/op/idconnect/mno-precheck`, `/op/idconnect/data`, `/op/idconnect/mno-selector`, `/op/idconnect/tmi-*`) used to query the cellular or fixed network and retrieve subscriber tokens in the background. In addition to XHR/Fetch calls (`$xhr` in uBO/AdGuard; `$xmlhttprequest` in AdBlock/ABP), Utiq loads several `/op/idconnect/` endpoints inside hidden iframes, which are caught by the `$subdocument` modifier. Path-level interception also neutralizes custom CNAME hosts configured via `customUtiqHost`.
+
+**`/op/privacy/$xhr,important`** *(uBlock Origin & AdGuard)*
+**`/op/privacy/$xmlhttprequest`** *(AdBlock & AdBlock Plus)*
+Blocks Utiq's privacy and consent synchronization endpoints (`/op/privacy/info` and `/op/privacy/permission`) across all partner domains.
 
 ---
 
@@ -175,6 +199,13 @@ ABP does not reliably handle the `.*^` wildcard combination in this position. Th
 
 ---
 
+### 4. Cross-Domain Iframe Blocking
+
+**`##iframe[name="__utiqLocator"]`**
+When publishers run programmatic advertising (Prebid.js v10.11+) inside cross-domain iframes, the Utiq SDK injects a void iframe named `__utiqLocator` into the parent DOM to signal the presence of Utiq IDs and cascade `adtechpass` (`atid`) and `martechpass` (`mtid`) tokens to child frames. This cosmetic rule blocks the locator iframe across all four engines.
+
+---
+
 ## 🗺️ Known Utiq Infrastructure
 
 This section documents Utiq's known core domains and endpoints, as a reference for contributors monitoring new infrastructure deployments.
@@ -187,23 +218,42 @@ This section documents Utiq's known core domains and endpoints, as a reference f
 | `utiq.com` | Main infrastructure — consent hub, APIs, CDN |
 | `utiq-aws.net` | AWS production backend |
 | `utiqcontent.com` | Static assets — SDK configuration files and SVGs |
+| `mno.link` | Carrier-specific MNO handshake gateways (`orangefr.mno.link`, `o2de.mno.link`, etc.) |
 
 ### Known Subdomains
 | Subdomain | Role |
 |---|---|
 | `consenthub.utiq.com` | User consent management portal |
-| `frontend.prod.utiq-aws.net` | Production API gateway — CNAME target for all partner-hosted subdomains |
+| `service.utiq.com` | Consent hub backend service |
+| `frontend.prod.utiq-aws.net` | Production API gateway — CNAME target for all partner-hosted subdomains and `*.mno.link` |
 
 ### Known API Endpoints
 | Path | Role |
 |---|---|
-| `/op/idconnect/mno-precheck` | Mobile Network Operator handshake — subscriber identity validation |
+| `/op/idconnect/mno-precheck` | Mobile Network Operator handshake — subscriber eligibility validation |
+| `/op/idconnect/data` | Subscriber token & `connectId` retrieval (XHR and iframe) |
+| `/op/idconnect/mno-selector` | Telecom operator selection endpoint |
+| `/op/idconnect/tmi-*` | Carrier-specific identification endpoints (e.g., `/op/idconnect/tmi-o2de`) |
+| `/op/privacy/info` | Privacy metadata endpoint |
+| `/op/privacy/permission` | Consent permission synchronization endpoint |
 
 ### Known Scripts
 | Filename | Role |
 |---|---|
 | `utiqLoader.js` | Main initialization script injected on partner sites |
-| `utiqConsentManager.js` | Consent popup script, loaded by `utiqLoader.js` — blocked implicitly if the loader is blocked |
+| `utiqConsentManager.js` | Consent popup script, loaded by `utiqLoader.js` or via a custom `consentManagerOrigin` |
+
+### Known First-Party Cookies & Local Storage Keys
+| Type | Name | Role |
+|---|---|---|
+| Cookie | `connectId` | Caches the carrier network signal (90 days) to avoid querying the ISP on every visit |
+| Cookie | `utiq_consent_status` | Stores base64-encoded user consent state (`true` / `false`, up to 180 days) |
+| Cookie | `utiq_consent_version` | Records the consent version accepted by the user (390 days) |
+| Cookie | `utiq_logging_level` | Stores SDK debug logging level |
+| `localStorage` | `utiqEligibility` | Stores ISP eligibility and ConsentHub revocation status |
+| `localStorage` | `utiqDataCallTimestamp` | Timestamp of the last MNO eligibility check |
+| `localStorage` | `utiqPass` | Stores generated `martechpass` (`mtid`), `adtechpass` (`atid`), and `attributionpass` (`attrid`) tokens |
+| `localStorage` | `utiq_openrtb_eids` | Serialized OpenRTB JSON array of Utiq IDs read directly by Prebid.js modules (`utiqIdSystem` / `utiqMtpIdSystem`) |
 
 ---
 
@@ -215,9 +265,11 @@ This section documents Utiq's known core domains and endpoints, as a reference f
 | `$script` modifier | ✅ | ✅ | ✅ | ✅ |
 | `$xhr` modifier | ✅ | ✅ | ❌ | ❌ |
 | `$xmlhttprequest` modifier | ✅ | ✅ | ✅ | ✅ |
+| `$subdocument` modifier | ✅ | ✅ | ✅ | ✅ |
 | `$important` modifier | ✅ | ✅ | ❌ | ❌ |
 | `\|\|utiq.*^` (wildcard) | ✅ | ✅ | ❌ | ❌ |
 | `\|\|utiq.` (boundary match) | ✅ | ✅ | ✅ | ✅ |
+| `##iframe[name="..."]` (cosmetic) | ✅ | ✅ | ✅ | ✅ |
 
 > These rules apply to **browser-based** filtering only (extension required). They have no effect on native mobile apps or system-level traffic.
 
@@ -229,7 +281,7 @@ To confirm the filters are active:
 
 1. Navigate to a partner website using the Utiq network.
 2. Open your extension's **Network Logger** (uBlock Origin dashboard → Logger tab; AdGuard → Filtering Log).
-3. Search for `utiq`. All related requests (`utiqLoader.js`, `mno-precheck`, partner subdomains, etc.) must appear in **red** (Blocked), confirming the handshake was intercepted before any carrier data was transmitted.
+3. Search for `utiq` or `idconnect`. All related requests (`utiqLoader.js`, `utiqConsentManager.js`, `/op/idconnect/*`, `*.mno.link`, partner subdomains, etc.) must appear in **red** (Blocked), confirming the handshake was intercepted before any carrier data was transmitted.
 
 ---
 
@@ -239,13 +291,13 @@ No single layer provides complete protection. Each layer's blind spots are cover
 
 | Layer | What it protects | Blind spots |
 |---|---|---|
-| Filters (this project) | HTTP requests, scripts, API calls | Browser only; ineffective in native apps |
+| Filters (this project) | HTTP requests, scripts, API calls, iframes | Browser only; ineffective in native apps |
 | Legal opt-out | Carrier-level consent revocation | Can be accidentally overridden by clicking "Accept" on a partner site |
 | VPN | Network level — prevents token generation entirely | Only active when the VPN tunnel is up |
 | DNS blocklist | All devices on the network | Blind to CNAME cloaking; cannot block by path or request type |
 
 ### Layer 1 — Browser Filters (this project)
-These rules intercept Utiq's script, API handshake, and partner subdomains at the HTTP level. Path-based rules (`/utiqLoader.js`, `/mno-precheck`) remain effective even against CNAME cloaking, unlike DNS-level blocking.
+These rules intercept Utiq's script, API handshake, and partner subdomains at the HTTP level. Path-based rules (`/utiqLoader.js`, `/utiqConsentManager.js`, `/op/idconnect/`, `/op/privacy/`) remain effective even against CNAME cloaking, unlike DNS-level blocking.
 
 ### Layer 2 — Legal Opt-Out (Carrier Level)
 Formally revoke your consent at the carrier infrastructure level via Utiq's official privacy portal:
@@ -271,9 +323,9 @@ Subscribe to a community-maintained blocklist to receive automatic domain update
 
 This project only tracks changes to Utiq's infrastructure. If you detect any of the following, feel free to open an issue or a pull request:
 
-- A new root domain (alternative to `utiq.com` or `utiq-aws.net`)
-- A new API path (alternative to `/op/idconnect/mno-precheck`)
-- A new script name (alternative to `utiqLoader.js`)
+- A new root domain (alternative to `utiq.com`, `utiq-aws.net`, `utiqcontent.com`, or `mno.link`)
+- A new API path (alternative to `/op/idconnect/` or `/op/privacy/`)
+- A new script name (alternative to `utiqLoader.js` or `utiqConsentManager.js`)
 - A partner using a subdomain prefix other than `utiq.`
 
 Please include the domain or path observed, the partner site where you detected it, and ideally a screenshot of the Network Logger showing the blocked (or unblocked) request.
@@ -286,6 +338,7 @@ Please include the domain or path observed, the partner site where you detected 
 
 | Version | Date | Notes |
 |---|---|---|
+| 1.6 | 2026-10-25 | Added `\|\|mno.link^` (MNO handshake domain), `/utiqConsentManager.js`, `/op/privacy/`, and `##iframe[name="__utiqLocator"]`; broadened `/op/idconnect/` to cover all endpoints and `$subdocument` (iframe) requests |
 | 1.5 | 2026-06-19 | Added `\|\|utiqcontent.com^` to both filter files (Utiq static assets domain) |
 | 1.4 | 2026-06-19 | Removed `$important` from `filters-abp.txt` (not supported by AdBlock/ABP engines) |
 | 1.3 | 2026-06-18 | Added `filters-abp.txt` (AdBlock & AdBlock Plus support) |
