@@ -2,17 +2,23 @@
 ! Description: Custom filtering rules to block the Utiq tracking network.
 ! Homepage: https://github.com/Polyum/anti-utiq-filters
 ! Expires: 2 days
-! Version: 1.5
+! Version: 1.6
 
 ! 1. Central Infrastructure
 ||utiq.com^
 ||utiq-aws.net^
 ||utiqcontent.com^
+||mno.link^
 
 ! 2. Script & API Interception
 /utiqLoader.js$script
-/op/idconnect/mno-precheck$xmlhttprequest
+/utiqConsentManager.js$script
+/op/idconnect/$xmlhttprequest,subdocument
+/op/privacy/$xmlhttprequest
 
 ! 3. Partner-Hosted Subdomain Blocking
 ! Adapted for ABP: matches 'utiq.' at any domain or subdomain boundary
 ||utiq.
+
+! 4. Cross-Domain Iframe Blocking
+##iframe[name="__utiqLocator"]
